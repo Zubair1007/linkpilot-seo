@@ -1,0 +1,83 @@
+services:
+  - type: web
+    name: linkpilot-seo
+    env: docker
+    plan: free
+    region: oregon
+    dockerfilePath: Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Application Configuration
+      - key: APP_NAME
+        value: "LinkPilot SEO"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false # Set to https://linkpilot-seo.onrender.com
+
+      # Supabase PostgreSQL Database (Free Tier)
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        sync: false # E.g. aws-0-us-east-1.pooler.supabase.com or db.[PROJECT-REF].supabase.co
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: postgres
+      - key: DB_USERNAME
+        value: postgres
+      - key: DB_PASSWORD
+        sync: false # Your Supabase database password
+      - key: DB_SSLMODE
+        value: require
+
+      # State & Queue Drivers (Zero-budget: database-driven, No Redis required)
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+
+      # Logging & Worker
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: info
+      - key: RUN_MIGRATIONS
+        value: "true"
+      - key: RUN_SEEDER
+        value: "true" # Set to false after first successful initialization
+      - key: RUN_QUEUE_WORKER
+        value: "true"
+
+      # Free-Tier Conservative Limits
+      - key: MAX_URLS_PER_IMPORT
+        value: "50"
+      - key: MAX_URL_CHECKS_PER_RUN
+        value: "25"
+      - key: MAX_RETRIES
+        value: "3"
+      - key: REQUEST_TIMEOUT
+        value: "10"
+      - key: MAX_RESPONSE_SIZE
+        value: "2097152"
+      - key: MAX_CONCURRENT_CHECKS
+        value: "3"
+      - key: DAILY_PROVIDER_LIMIT
+        value: "100"
+
+      # Optional Third-Party SEO APIs (Moz, Ahrefs, SEMrush)
+      - key: MOZ_ACCESS_ID
+        sync: false
+      - key: MOZ_SECRET_KEY
+        sync: false
+      - key: AHREFS_API_KEY
+        sync: false
+      - key: SEMRUSH_API_KEY
+        sync: false
