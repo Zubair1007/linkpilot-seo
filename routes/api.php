@@ -65,9 +65,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/reports/export-csv', [ReportApiController::class, 'exportCsv']);
         Route::get('/reports/export-pdf', [ReportApiController::class, 'exportPdf']);
 
-        // Admin & Health
+        // Admin & Health (Restricted strictly to Admin role)
         Route::get('/admin/users', [AdminApiController::class, 'users']);
+        Route::post('/admin/users', [AdminApiController::class, 'createUser']);
         Route::put('/admin/users/{id}', [AdminApiController::class, 'updateUser']);
+        Route::delete('/admin/users/{id}', [AdminApiController::class, 'deleteUser']);
         Route::get('/admin/health', [AdminApiController::class, 'systemHealth']);
     });
 });

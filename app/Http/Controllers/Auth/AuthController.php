@@ -125,6 +125,10 @@ class AuthController extends Controller
      */
     public function createApiKey(Request $request): JsonResponse
     {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Admin authorization required. SEO Specialists are not permitted to manage API keys.'], 403);
+        }
+
         $request->validate([
             'name' => 'required|string|max:100',
             'abilities' => 'array',
@@ -155,6 +159,10 @@ class AuthController extends Controller
 
     public function listApiKeys(Request $request): JsonResponse
     {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Admin authorization required. SEO Specialists are not permitted to view API keys.'], 403);
+        }
+
         return response()->json([
             'keys' => $request->user()->tokens,
         ]);
@@ -162,6 +170,10 @@ class AuthController extends Controller
 
     public function revokeApiKey(Request $request, int $id): JsonResponse
     {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Admin authorization required. SEO Specialists are not permitted to revoke API keys.'], 403);
+        }
+
         $token = $request->user()->tokens()->where('id', $id)->firstOrFail();
         $token->delete();
 

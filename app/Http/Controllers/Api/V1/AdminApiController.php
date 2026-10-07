@@ -44,6 +44,70 @@ class AdminApiController extends Controller
         return response()->json($user);
     }
 
+    public function createUser(Request $request): JsonResponse
+    {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Admin authorization required.'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+            'role' => 'required|in:admin,seo_specialist,viewer',
+            'status' => 'sometimes|in:active,suspended',
+            'api_rate_limit' => 'sometimes|integer|min:10|max:1000',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'status' => $validated['status'] ?? 'active',
+            'api_rate_limit' => $validated['api_rate_limit'] ?? 60,
+        ]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'user_created_by_admin',
+            'resource_type' => 'User',
+            'resource_id' => (string) $user->id,
+            'details' => ['email' => $user->email, 'role' => $user->role],
+            'ip_address' => $request->ip(),
+            'created_at' => now(),
+        ]);
+
+        return response()->json($user, 201);
+    }
+
+    public function deleteUser(Request $request, int $id): JsonResponse
+    {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Admin authorization required.'], 403);
+        }
+
+        if ($request->user()->id === $id) {
+            return response()->json(['message' => 'Cannot delete your own admin account.'], 422);
+        }
+
+        $user = User::findOrFail($id);
+        $userEmail = $user->email;
+        $user->delete();
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'user_deleted_by_admin',
+            'resource_type' => 'User',
+            'resource_id' => (string) $id,
+            'details' => ['deleted_email' => $userEmail],
+            'ip_address' => $request->ip(),
+            'created_at' => now(),
+        ]);
+
+        return response()->json(['message' => "User [{$userEmail}] deleted successfully."]);
+    }
+
     public function systemHealth(Request $request): JsonResponse
     {
         if (!$request->user()->isAdmin()) {

@@ -14,9 +14,11 @@ class SearchEngineApiController extends Controller
 {
     public function listProperties(Request $request): JsonResponse
     {
-        $properties = SearchEngineProperty::with('project:id,name')
-            ->where('user_id', $request->user()->id)
-            ->get();
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Admin authorization required. SEO Specialists do not have permission to view search engine API properties.'], 403);
+        }
+
+        $properties = SearchEngineProperty::with('project:id,name')->get();
 
         return response()->json($properties);
     }
@@ -26,6 +28,9 @@ class SearchEngineApiController extends Controller
         BingWebmasterProvider $bingProvider,
         GoogleSearchConsoleProvider $gscProvider
     ): JsonResponse {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Admin authorization required. SEO Specialists do not have permission to connect or manage search engine integration secrets.'], 403);
+        }
         $validated = $request->validate([
             'project_id' => 'nullable|exists:projects,id',
             'provider' => 'required|in:bing_webmaster,google_search_console,indexnow',
@@ -87,7 +92,11 @@ class SearchEngineApiController extends Controller
 
     public function disconnectProperty(Request $request, int $id): JsonResponse
     {
-        $property = SearchEngineProperty::where('user_id', $request->user()->id)->findOrFail($id);
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Admin authorization required. SEO Specialists do not have permission to disconnect search engine properties.'], 403);
+        }
+
+        $property = SearchEngineProperty::findOrFail($id);
         $property->delete();
 
         return response()->json(['message' => 'Property disconnected.']);

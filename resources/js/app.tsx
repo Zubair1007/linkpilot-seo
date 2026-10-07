@@ -111,6 +111,7 @@ export const App: React.FC = () => {
                     setCurrentTab(tab);
                 }}
                 liveAlertCount={metrics?.lost_backlinks || 0}
+                userRole={user?.role}
             />
 
             {/* Main Application Area */}
@@ -176,9 +177,14 @@ export const App: React.FC = () => {
                     )}
 
                     {currentTab === 'integrations' && (
-                        <IntegrationsView
-                            projects={projects}
-                        />
+                        user?.role === 'admin' ? (
+                            <IntegrationsView projects={projects} />
+                        ) : (
+                            <div className="p-8 text-center bg-slate-900 border border-slate-800 rounded-2xl max-w-xl mx-auto mt-12">
+                                <h3 className="text-lg font-bold text-rose-400">Access Denied (Admin Required)</h3>
+                                <p className="text-sm text-slate-400 mt-2">SEO Specialists do not have authorization to view or configure Search Engine integration secrets.</p>
+                            </div>
+                        )
                     )}
 
                     {currentTab === 'queues' && (
@@ -193,7 +199,14 @@ export const App: React.FC = () => {
                     )}
 
                     {currentTab === 'admin' && (
-                        <AdminHealthView />
+                        user?.role === 'admin' ? (
+                            <AdminHealthView />
+                        ) : (
+                            <div className="p-8 text-center bg-slate-900 border border-slate-800 rounded-2xl max-w-xl mx-auto mt-12">
+                                <h3 className="text-lg font-bold text-rose-400">Access Denied (Admin Required)</h3>
+                                <p className="text-sm text-slate-400 mt-2">SEO Specialists do not have authorization to manage Users, Roles, or System Settings.</p>
+                            </div>
+                        )
                     )}
                 </main>
             </div>

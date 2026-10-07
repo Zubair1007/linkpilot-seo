@@ -18,21 +18,24 @@ interface SidebarProps {
     currentTab: string;
     setCurrentTab: (tab: string) => void;
     liveAlertCount: number;
+    userRole?: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab, liveAlertCount }) => {
-    const navItems = [
-        { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard },
-        { id: 'projects', label: 'Projects & Domains', icon: FolderKanban },
-        { id: 'campaigns', label: 'Campaigns', icon: Target },
-        { id: 'backlinks', label: 'Backlinks Explorer', icon: Link2 },
-        { id: 'bulk-import', label: 'Bulk Import', icon: UploadCloud },
-        { id: 'health-analyzer', label: 'URL Health & SSRF', icon: ActivitySquare },
-        { id: 'integrations', label: 'Search Engine APIs', icon: SearchCheck },
-        { id: 'queues', label: 'Discovery & Retries', icon: Cpu },
-        { id: 'reports', label: 'Reports & Export', icon: FileSpreadsheet },
-        { id: 'admin', label: 'System Health & Admin', icon: ShieldAlert },
+export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab, liveAlertCount, userRole }) => {
+    const allNavItems = [
+        { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard, adminOnly: false },
+        { id: 'projects', label: 'Projects & Domains', icon: FolderKanban, adminOnly: false },
+        { id: 'campaigns', label: 'Campaigns', icon: Target, adminOnly: false },
+        { id: 'backlinks', label: 'Backlinks Explorer', icon: Link2, adminOnly: false },
+        { id: 'bulk-import', label: 'Bulk Import', icon: UploadCloud, adminOnly: false },
+        { id: 'health-analyzer', label: 'URL Health & SSRF', icon: ActivitySquare, adminOnly: false },
+        { id: 'integrations', label: 'Search Engine APIs', icon: SearchCheck, adminOnly: true },
+        { id: 'queues', label: 'Discovery & Retries', icon: Cpu, adminOnly: false },
+        { id: 'reports', label: 'Reports & Export', icon: FileSpreadsheet, adminOnly: false },
+        { id: 'admin', label: 'System Health & Admin', icon: ShieldAlert, adminOnly: true },
     ];
+
+    const navItems = allNavItems.filter(item => !item.adminOnly || userRole === 'admin');
 
     return (
         <aside className="w-64 bg-slate-900/90 border-r border-slate-800 flex flex-col shrink-0 select-none backdrop-blur-md">
