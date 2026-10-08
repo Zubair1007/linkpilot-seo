@@ -35,12 +35,14 @@ export const TABS: Record<string, TabDef> = {
     'queues': { id: 'queues', label: 'Discovery & Retries', path: '/queues', title: 'Discovery & Retry Queues' },
     'reports': { id: 'reports', label: 'Reports & Export', path: '/reports', title: 'Reports & Audit Export' },
     'admin': { id: 'admin', label: 'System Health & Admin', path: '/admin', title: 'System Health & Admin', adminOnly: true },
+    'login': { id: 'login', label: 'Sign In / Account', path: '/login', title: 'Sign In & Authentication' },
 };
 
 export const getTabFromPath = (pathname: string): string => {
     const raw = pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
     if (!raw || raw === 'dashboard') return 'dashboard';
     if (TABS[raw]) return raw;
+    if (raw === 'login' || raw === 'signin' || raw === 'auth' || raw === 'logout') return 'login';
     if (raw === 'health' || raw === 'url-health') return 'health-analyzer';
     if (raw === 'import') return 'bulk-import';
     if (raw === 'links') return 'backlinks';
@@ -159,6 +161,9 @@ export const App: React.FC = () => {
         setUser(loggedInUser);
         setShowAuthModal(false);
         fetchCoreData();
+        if (currentTab === 'login') {
+            handleNavigateTab('dashboard');
+        }
     };
 
     const handleLogout = async () => {
@@ -170,6 +175,7 @@ export const App: React.FC = () => {
         localStorage.removeItem('lp_token');
         setUser(null);
         setShowAuthModal(true);
+        handleNavigateTab('login');
     };
 
     const navigateToBacklinksWithCampaign = (campaignId: number) => {
@@ -196,6 +202,10 @@ export const App: React.FC = () => {
                     selectedProjectId={selectedProjectId}
                     setSelectedProjectId={setSelectedProjectId}
                     onLogout={handleLogout}
+                    onOpenLogin={() => {
+                        setShowAuthModal(true);
+                        handleNavigateTab('login');
+                    }}
                     onRefresh={fetchCoreData}
                     isLoading={isLoading}
                     activeTabLabel={activeTabDef.label}

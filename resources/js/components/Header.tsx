@@ -1,6 +1,6 @@
 import React from 'react';
 import { Project, User } from '../types';
-import { Bell, RefreshCw, LogOut, Shield, User as UserIcon, CheckCircle2 } from 'lucide-react';
+import { Bell, RefreshCw, LogOut, Shield, User as UserIcon, CheckCircle2, LogIn } from 'lucide-react';
 
 interface HeaderProps {
     user: User | null;
@@ -8,6 +8,7 @@ interface HeaderProps {
     selectedProjectId: number | 'all';
     setSelectedProjectId: (id: number | 'all') => void;
     onLogout: () => void;
+    onOpenLogin?: () => void;
     onRefresh: () => void;
     isLoading: boolean;
     activeTabLabel: string;
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
     selectedProjectId,
     setSelectedProjectId,
     onLogout,
+    onOpenLogin,
     onRefresh,
     isLoading,
     activeTabLabel,
@@ -99,9 +101,22 @@ export const Header: React.FC<HeaderProps> = ({
                         </button>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-2">
-                        <UserIcon className="w-4 h-4 text-slate-400" />
-                        <span className="text-xs text-slate-300">Guest Mode</span>
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                            <UserIcon className="w-4 h-4 text-slate-500" />
+                            <span className="hidden sm:inline">Guest</span>
+                        </div>
+                        <a
+                            href="/login"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (onOpenLogin) onOpenLogin();
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition cursor-pointer"
+                        >
+                            <LogIn className="w-3.5 h-3.5" />
+                            <span>Sign In</span>
+                        </a>
                     </div>
                 )}
             </div>
