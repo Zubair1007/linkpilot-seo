@@ -16,10 +16,43 @@ import { ReportsView } from './views/ReportsView';
 import { AdminHealthView } from './views/AdminHealthView';
 import { AuthModal } from './views/AuthModal';
 
+export interface TabDef {
+    id: string;
+    label: string;
+    path: string;
+    title: string;
+    adminOnly?: boolean;
+}
+
+export const TABS: Record<string, TabDef> = {
+    'dashboard': { id: 'dashboard', label: 'Executive Dashboard', path: '/dashboard', title: 'Executive Dashboard' },
+    'projects': { id: 'projects', label: 'Projects & Domains', path: '/projects', title: 'Projects & Domains' },
+    'campaigns': { id: 'campaigns', label: 'Campaigns', path: '/campaigns', title: 'Outreach & Link Campaigns' },
+    'backlinks': { id: 'backlinks', label: 'Backlinks Explorer', path: '/backlinks', title: 'Backlinks Explorer' },
+    'bulk-import': { id: 'bulk-import', label: 'Bulk Import', path: '/bulk-import', title: 'Bulk Backlink Import' },
+    'health-analyzer': { id: 'health-analyzer', label: 'URL Health & SSRF', path: '/health-analyzer', title: 'URL Health & SSRF Analyzer' },
+    'integrations': { id: 'integrations', label: 'Search Engine APIs', path: '/integrations', title: 'Search Engine Integrations', adminOnly: true },
+    'queues': { id: 'queues', label: 'Discovery & Retries', path: '/queues', title: 'Discovery & Retry Queues' },
+    'reports': { id: 'reports', label: 'Reports & Export', path: '/reports', title: 'Reports & Audit Export' },
+    'admin': { id: 'admin', label: 'System Health & Admin', path: '/admin', title: 'System Health & Admin', adminOnly: true },
+};
+
+export const getTabFromPath = (pathname: string): string => {
+    const raw = pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+    if (!raw || raw === 'dashboard') return 'dashboard';
+    if (TABS[raw]) return raw;
+    if (raw === 'health' || raw === 'url-health') return 'health-analyzer';
+    if (raw === 'import') return 'bulk-import';
+    if (raw === 'links') return 'backlinks';
+    return 'dashboard';
+};
+
 export const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(false);
-    const [currentTab, setCurrentTab] = useState<string>('dashboard');
+    const [currentTab, setCurrentTab] = useState<string>(() => {
+        return getTabFromPath(window.location.pathname);
+    });
     const [selectedProjectId, setSelectedProjectId] = useState<number | 'all'>('all');
     const [filterCampaignId, setFilterCampaignId] = useState<number | null>(null);
 
@@ -29,6 +62,49 @@ export const App: React.FC = () => {
     const [recentEvents, setRecentEvents] = useState<any[]>([]);
     const [apiUsage, setApiUsage] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    const activeTabDef = TABS[currentTab] || TABS['dashboard'];
+
+    // Function to navigate tab and synchronize browser history & document title
+    const handleNavigateTab = (tabId: string, replace = false) => {
+        const targetTab = TABS[tabId] || TABS['dashboard'];
+        if (tabId !== 'backlinks') {
+            setFilterCampaignId(null);
+        }
+        setCurrentTab(targetTab.id);
+
+        const targetUrl = targetTab.id === 'dashboard' ? '/dashboard' : targetTab.path;
+        if (window.location.pathname !== targetUrl) {
+            if (replace) {
+                window.history.replaceState({ tab: targetTab.id }, '', targetUrl);
+            } else {
+                window.history.pushState({ tab: targetTab.id }, '', targetUrl);
+            }
+        }
+        document.title = `LinkPilot SEO — ${targetTab.title}`;
+    };
+
+    // Listen to browser Back / Forward events and update URL on start
+    useEffect(() => {
+        const initialTab = getTabFromPath(window.location.pathname);
+        const def = TABS[initialTab] || TABS['dashboard'];
+        document.title = `LinkPilot SEO — ${def.title}`;
+
+        // If at root '/', reflect /dashboard in address bar
+        if (window.location.pathname === '/' || window.location.pathname === '') {
+            window.history.replaceState({ tab: 'dashboard' }, '', '/dashboard');
+        }
+
+        const handlePopState = () => {
+            const current = getTabFromPath(window.location.pathname);
+            setCurrentTab(current);
+            const activeDef = TABS[current] || TABS['dashboard'];
+            document.title = `LinkPilot SEO — ${activeDef.title}`;
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
 
     // Initial auth check
     useEffect(() => {
@@ -98,7 +174,7 @@ export const App: React.FC = () => {
 
     const navigateToBacklinksWithCampaign = (campaignId: number) => {
         setFilterCampaignId(campaignId);
-        setCurrentTab('backlinks');
+        handleNavigateTab('backlinks');
     };
 
     return (
@@ -106,10 +182,7 @@ export const App: React.FC = () => {
             {/* Sidebar Navigation */}
             <Sidebar
                 currentTab={currentTab}
-                setCurrentTab={(tab) => {
-                    if (tab !== 'backlinks') setFilterCampaignId(null);
-                    setCurrentTab(tab);
-                }}
+                setCurrentTab={handleNavigateTab}
                 liveAlertCount={metrics?.lost_backlinks || 0}
                 userRole={user?.role}
             />
@@ -125,6 +198,8 @@ export const App: React.FC = () => {
                     onLogout={handleLogout}
                     onRefresh={fetchCoreData}
                     isLoading={isLoading}
+                    activeTabLabel={activeTabDef.label}
+                    activeTabPath={activeTabDef.path}
                 />
 
                 {/* Content View Container */}
@@ -134,7 +209,7 @@ export const App: React.FC = () => {
                             metrics={metrics}
                             recentEvents={recentEvents}
                             apiUsage={apiUsage}
-                            onNavigate={setCurrentTab}
+                            onNavigate={handleNavigateTab}
                         />
                     )}
 
@@ -167,7 +242,7 @@ export const App: React.FC = () => {
                             campaigns={campaigns}
                             onImportSuccess={() => {
                                 fetchCoreData();
-                                setCurrentTab('backlinks');
+                                handleNavigateTab('backlinks');
                             }}
                         />
                     )}

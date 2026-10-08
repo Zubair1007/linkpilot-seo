@@ -10,6 +10,8 @@ interface HeaderProps {
     onLogout: () => void;
     onRefresh: () => void;
     isLoading: boolean;
+    activeTabLabel: string;
+    activeTabPath: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,33 +22,51 @@ export const Header: React.FC<HeaderProps> = ({
     onLogout,
     onRefresh,
     isLoading,
+    activeTabLabel,
+    activeTabPath,
 }) => {
     return (
-        <header className="h-16 bg-slate-900/60 border-b border-slate-800/80 px-6 flex items-center justify-between backdrop-blur-md shrink-0">
-            {/* Project Filter Selector */}
-            <div className="flex items-center gap-3">
-                <span className="text-xs font-medium text-slate-400">Scope:</span>
-                <select
-                    value={selectedProjectId}
-                    onChange={(e) => setSelectedProjectId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-                    className="bg-slate-800/90 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-slate-100 font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                >
-                    <option value="all">All Projects & Clients ({projects.length})</option>
-                    {projects.map((p) => (
-                        <option key={p.id} value={p.id}>
-                            {p.name} ({p.target_domain})
-                        </option>
-                    ))}
-                </select>
+        <header className="h-16 bg-slate-900/60 border-b border-slate-800/80 px-4 md:px-6 flex items-center justify-between backdrop-blur-md shrink-0">
+            {/* Active Location Breadcrumb & Scope Filter */}
+            <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                {/* Active View Pill */}
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/90 border border-slate-700/80 shadow-sm text-xs shrink-0">
+                    <span className="text-slate-400 font-medium hidden sm:inline">LinkPilot</span>
+                    <span className="text-slate-600 hidden sm:inline">/</span>
+                    <span className="text-indigo-300 font-semibold flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+                        {activeTabLabel}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono hidden md:inline ml-1 bg-slate-900/80 px-1.5 py-0.5 rounded border border-slate-700/50">
+                        {activeTabPath}
+                    </span>
+                </div>
 
-                <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-medium">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Real-time Scheduler Active</span>
+                {/* Project Filter Selector */}
+                <div className="hidden sm:flex items-center gap-2 border-l border-slate-800 pl-3">
+                    <span className="text-xs font-medium text-slate-400 hidden xl:inline">Scope:</span>
+                    <select
+                        value={selectedProjectId}
+                        onChange={(e) => setSelectedProjectId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                        className="bg-slate-800/90 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-100 font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-[200px] truncate"
+                    >
+                        <option value="all">All Projects ({projects.length})</option>
+                        {projects.map((p) => (
+                            <option key={p.id} value={p.id}>
+                                {p.name} ({p.target_domain})
+                            </option>
+                        ))}
+                    </select>
+
+                    <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Live Sync Active</span>
+                    </div>
                 </div>
             </div>
 
             {/* Right Tools & User Info */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 md:gap-4 shrink-0">
                 <button
                     onClick={onRefresh}
                     disabled={isLoading}

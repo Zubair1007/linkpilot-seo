@@ -23,16 +23,16 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab, liveAlertCount, userRole }) => {
     const allNavItems = [
-        { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard, adminOnly: false },
-        { id: 'projects', label: 'Projects & Domains', icon: FolderKanban, adminOnly: false },
-        { id: 'campaigns', label: 'Campaigns', icon: Target, adminOnly: false },
-        { id: 'backlinks', label: 'Backlinks Explorer', icon: Link2, adminOnly: false },
-        { id: 'bulk-import', label: 'Bulk Import', icon: UploadCloud, adminOnly: false },
-        { id: 'health-analyzer', label: 'URL Health & SSRF', icon: ActivitySquare, adminOnly: false },
-        { id: 'integrations', label: 'Search Engine APIs', icon: SearchCheck, adminOnly: true },
-        { id: 'queues', label: 'Discovery & Retries', icon: Cpu, adminOnly: false },
-        { id: 'reports', label: 'Reports & Export', icon: FileSpreadsheet, adminOnly: false },
-        { id: 'admin', label: 'System Health & Admin', icon: ShieldAlert, adminOnly: true },
+        { id: 'dashboard', label: 'Executive Dashboard', path: '/dashboard', icon: LayoutDashboard, adminOnly: false },
+        { id: 'projects', label: 'Projects & Domains', path: '/projects', icon: FolderKanban, adminOnly: false },
+        { id: 'campaigns', label: 'Campaigns', path: '/campaigns', icon: Target, adminOnly: false },
+        { id: 'backlinks', label: 'Backlinks Explorer', path: '/backlinks', icon: Link2, adminOnly: false },
+        { id: 'bulk-import', label: 'Bulk Import', path: '/bulk-import', icon: UploadCloud, adminOnly: false },
+        { id: 'health-analyzer', label: 'URL Health & SSRF', path: '/health-analyzer', icon: ActivitySquare, adminOnly: false },
+        { id: 'integrations', label: 'Search Engine APIs', path: '/integrations', icon: SearchCheck, adminOnly: true },
+        { id: 'queues', label: 'Discovery & Retries', path: '/queues', icon: Cpu, adminOnly: false },
+        { id: 'reports', label: 'Reports & Export', path: '/reports', icon: FileSpreadsheet, adminOnly: false },
+        { id: 'admin', label: 'System Health & Admin', path: '/admin', icon: ShieldAlert, adminOnly: true },
     ];
 
     const navItems = allNavItems.filter(item => !item.adminOnly || userRole === 'admin');
@@ -40,7 +40,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab, liv
     return (
         <aside className="w-64 bg-slate-900/90 border-r border-slate-800 flex flex-col shrink-0 select-none backdrop-blur-md">
             {/* Brand Logo & Title */}
-            <div className="h-16 flex items-center px-6 gap-3 border-b border-slate-800/80 bg-slate-950/40">
+            <a
+                href="/dashboard"
+                onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentTab('dashboard');
+                }}
+                className="h-16 flex items-center px-6 gap-3 border-b border-slate-800/80 bg-slate-950/40 hover:bg-slate-900/50 transition cursor-pointer"
+            >
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
                     <Radio className="w-5 h-5 animate-pulse" />
                 </div>
@@ -50,7 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab, liv
                     </h1>
                     <p className="text-[11px] text-slate-400 font-medium">Index & Crawl Monitor</p>
                 </div>
-            </div>
+            </a>
 
             {/* Navigation Links */}
             <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -61,12 +68,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab, liv
                     const Icon = item.icon;
                     const isActive = currentTab === item.id;
                     return (
-                        <button
+                        <a
                             key={item.id}
-                            onClick={() => setCurrentTab(item.id)}
-                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
+                            href={item.path}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setCurrentTab(item.id);
+                            }}
+                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 cursor-pointer ${
                                 isActive
-                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-semibold'
+                                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 font-semibold ring-1 ring-indigo-400/40'
                                     : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                             }`}
                         >
@@ -74,12 +85,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, setCurrentTab, liv
                                 <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                                 <span>{item.label}</span>
                             </div>
-                            {item.id === 'backlinks' && liveAlertCount > 0 && (
-                                <span className="px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">
-                                    {liveAlertCount} lost
-                                </span>
-                            )}
-                        </button>
+                            <div className="flex items-center gap-1.5">
+                                {item.id === 'backlinks' && liveAlertCount > 0 && !isActive && (
+                                    <span className="px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                                        {liveAlertCount} lost
+                                    </span>
+                                )}
+                                {isActive && (
+                                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 shadow-sm animate-pulse"></span>
+                                )}
+                            </div>
+                        </a>
                     );
                 })}
             </nav>
