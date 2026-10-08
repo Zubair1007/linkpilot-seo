@@ -4,17 +4,45 @@ import { Lock, Mail, User as UserIcon, Shield, Sparkles } from 'lucide-react';
 import { User } from '../types';
 
 interface AuthModalProps {
+    initialMode?: 'login' | 'register';
+    onModeChange?: (mode: 'login' | 'register') => void;
     onLoginSuccess: (user: User, token: string) => void;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ onLoginSuccess }) => {
-    const [isRegister, setIsRegister] = useState(false);
+export const AuthModal: React.FC<AuthModalProps> = ({
+    initialMode = 'login',
+    onModeChange,
+    onLoginSuccess,
+}) => {
+    const [isRegister, setIsRegister] = useState(initialMode === 'register');
     const [email, setEmail] = useState('admin@linkpilot.io');
     const [password, setPassword] = useState('password');
     const [name, setName] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    React.useEffect(() => {
+        setIsRegister(initialMode === 'register');
+        if (initialMode === 'register') {
+            setEmail('');
+            setPassword('');
+        }
+    }, [initialMode]);
+
+    const handleSwitchToRegister = () => {
+        setIsRegister(true);
+        setEmail('');
+        setPassword('');
+        if (onModeChange) onModeChange('register');
+    };
+
+    const handleSwitchToLogin = () => {
+        setIsRegister(false);
+        setEmail('admin@linkpilot.io');
+        setPassword('password');
+        if (onModeChange) onModeChange('login');
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -165,16 +193,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onLoginSuccess }) => {
                     {isRegister ? (
                         <span>
                             Already registered?{' '}
-                            <button onClick={() => setIsRegister(false)} className="text-indigo-400 hover:underline font-semibold">
+                            <a
+                                href="/login"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleSwitchToLogin();
+                                }}
+                                className="text-indigo-400 hover:text-indigo-300 hover:underline font-semibold cursor-pointer"
+                            >
                                 Sign In
-                            </button>
+                            </a>
                         </span>
                     ) : (
                         <span>
                             Need an account?{' '}
-                            <button onClick={() => setIsRegister(true)} className="text-indigo-400 hover:underline font-semibold">
+                            <a
+                                href="/register"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    handleSwitchToRegister();
+                                }}
+                                className="text-indigo-400 hover:text-indigo-300 hover:underline font-semibold cursor-pointer"
+                            >
                                 Register
-                            </button>
+                            </a>
                         </span>
                     )}
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Project, User } from '../types';
-import { Bell, RefreshCw, LogOut, Shield, User as UserIcon, CheckCircle2, LogIn } from 'lucide-react';
+import { Bell, RefreshCw, LogOut, Shield, User as UserIcon, CheckCircle2, LogIn, UserPlus } from 'lucide-react';
 
 interface HeaderProps {
     user: User | null;
@@ -9,6 +9,7 @@ interface HeaderProps {
     setSelectedProjectId: (id: number | 'all') => void;
     onLogout: () => void;
     onOpenLogin?: () => void;
+    onOpenRegister?: () => void;
     onRefresh: () => void;
     isLoading: boolean;
     activeTabLabel: string;
@@ -22,6 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
     setSelectedProjectId,
     onLogout,
     onOpenLogin,
+    onOpenRegister,
     onRefresh,
     isLoading,
     activeTabLabel,
@@ -101,21 +103,28 @@ export const Header: React.FC<HeaderProps> = ({
                         </button>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                            <UserIcon className="w-4 h-4 text-slate-500" />
-                            <span className="hidden sm:inline">Guest</span>
-                        </div>
+                    <div className="flex items-center gap-2 sm:gap-2.5">
                         <a
                             href="/login"
                             onClick={(e) => {
                                 e.preventDefault();
                                 if (onOpenLogin) onOpenLogin();
                             }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 text-slate-200 hover:text-white border border-slate-700 text-xs font-semibold transition cursor-pointer"
+                        >
+                            <LogIn className="w-3.5 h-3.5 text-indigo-400" />
+                            <span>Sign In</span>
+                        </a>
+                        <a
+                            href="/register"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (onOpenRegister) onOpenRegister();
+                            }}
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition cursor-pointer"
                         >
-                            <LogIn className="w-3.5 h-3.5" />
-                            <span>Sign In</span>
+                            <UserPlus className="w-3.5 h-3.5" />
+                            <span>Create Account</span>
                         </a>
                     </div>
                 )}

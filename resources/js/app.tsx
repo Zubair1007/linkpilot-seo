@@ -36,6 +36,7 @@ export const TABS: Record<string, TabDef> = {
     'reports': { id: 'reports', label: 'Reports & Export', path: '/reports', title: 'Reports & Audit Export' },
     'admin': { id: 'admin', label: 'System Health & Admin', path: '/admin', title: 'System Health & Admin', adminOnly: true },
     'login': { id: 'login', label: 'Sign In / Account', path: '/login', title: 'Sign In & Authentication' },
+    'register': { id: 'register', label: 'Create Account', path: '/register', title: 'Register Account' },
 };
 
 export const getTabFromPath = (pathname: string): string => {
@@ -43,6 +44,7 @@ export const getTabFromPath = (pathname: string): string => {
     if (!raw || raw === 'dashboard') return 'dashboard';
     if (TABS[raw]) return raw;
     if (raw === 'login' || raw === 'signin' || raw === 'auth' || raw === 'logout') return 'login';
+    if (raw === 'register' || raw === 'signup') return 'register';
     if (raw === 'health' || raw === 'url-health') return 'health-analyzer';
     if (raw === 'import') return 'bulk-import';
     if (raw === 'links') return 'backlinks';
@@ -161,7 +163,7 @@ export const App: React.FC = () => {
         setUser(loggedInUser);
         setShowAuthModal(false);
         fetchCoreData();
-        if (currentTab === 'login') {
+        if (currentTab === 'login' || currentTab === 'register') {
             handleNavigateTab('dashboard');
         }
     };
@@ -205,6 +207,10 @@ export const App: React.FC = () => {
                     onOpenLogin={() => {
                         setShowAuthModal(true);
                         handleNavigateTab('login');
+                    }}
+                    onOpenRegister={() => {
+                        setShowAuthModal(true);
+                        handleNavigateTab('register');
                     }}
                     onRefresh={fetchCoreData}
                     isLoading={isLoading}
@@ -298,7 +304,13 @@ export const App: React.FC = () => {
 
             {/* Authentication Modal */}
             {showAuthModal && (
-                <AuthModal onLoginSuccess={handleLoginSuccess} />
+                <AuthModal
+                    initialMode={currentTab === 'register' ? 'register' : 'login'}
+                    onModeChange={(mode) => {
+                        handleNavigateTab(mode);
+                    }}
+                    onLoginSuccess={handleLoginSuccess}
+                />
             )}
         </div>
     );
